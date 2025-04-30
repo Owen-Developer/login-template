@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Verify Your Email</title>
+</head>
+
+<body>
+    <div class="verify-msg"></div>
+
+    <div>
+        <a href="login.html" class="btn-home">Log in</a>
+        <a href="index.html" class="btn-home">Home</a>
+    </div>
+
+    <script>
+        async function getData() {
+            try {
+                const response = await fetch('/auth-user');
+                const data = await response.json(); 
+
+                document.querySelector(".verify-msg").textContent = data.message;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        getData();
+    </script>
+</body>
+</html>

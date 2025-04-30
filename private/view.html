@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Your Appointments</title>
+</head>
+
+<body>
+    <div class="book-title">Your Appointments</div>
+
+    <div class="bookings-container">
+        <div class="view-msg" style="display: none;">You have no bookings made.</div>
+    </div>
+
+
+    <script>
+        async function getBookings() {
+            try {
+                const response = await fetch('/appointments');
+                const data = await response.json();
+
+                if(data.isBooking){
+                    const bookings = data.bookings;
+                    
+                    bookings.forEach(obj => {
+                        let viewBox = document.createElement("div");
+                        viewBox.classList.add("view-box");
+                        let viewHead = document.createElement("div");
+                        viewHead.classList.add("view-head");
+                        viewHead.textContent = obj.date.slice(0, 10);
+                        let viewTime = document.createElement("div");
+                        viewTime.classList.add("view-head");
+                        viewTime.textContent = (Number(obj.time.slice(1, 2)) - 2) + "pm";
+                        let btnDelete = document.createElement("div");
+                        btnDelete.classList.add("btn-delete");
+                        btnDelete.textContent = "CANCEL";
+
+                        btnDelete.addEventListener("click", async () => {
+                            document.querySelector(".bookings-container").removeChild(viewBox);
+
+                            let date = obj.date;
+                            let time = obj.time;
+
+                            try {
+                                const response = await fetch('/cancel', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ date, time })
+                                });
+
+                                if (!response.ok) {
+                                    const data = await response.json();
+                                    console.error('Booking failed: ' + data.message);
+                                    return;
+                                }
+
+                                const data = await response.json();
+                    document.querySelector(".view-msg").textContent = "Your booking has been deleted.";
+                                document.querySelector(".view-msg").style.display = "block";
+                            } catch (error) {
+                                console.error('Error:', error);
+                            }
+                        });
+
+                        document.querySelector(".bookings-container").appendChild(viewBox);
+                        viewBox.appendChild(viewHead);
+                        viewBox.appendChild(viewTime);
+                        viewBox.appendChild(btnDelete);
+                    });
+                } else {
+                    document.querySelector(".view-msg").style.display = "block";
+                }
+            } catch (error) {
+                console.log('Error:', error);
+            }
+        }
+        getBookings();
+
+
+    </script>
+</body>
+</html>

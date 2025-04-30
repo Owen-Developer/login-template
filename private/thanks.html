@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Thanks for booking</title>
+</head>
+
+<body>
+    <div class="book-title">Thanks for booking!</div>
+
+    <div>
+        <a href="/index.html" class="btn-home">Home</a>
+        <a onclick="logout();" href="/login.html" class="btn-home">Log out</a>
+    </div>
+
+    <script>
+        async function logout(){
+            await fetch('/logout'); // Wait for the response
+            window.location.href = "/login.html";
+        }
+    </script>
+</body>
+</html>

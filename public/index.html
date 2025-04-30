@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Home Page</title>
+</head>
+
+<body>
+
+    <div class="home-title" id="welcome">Logged In</div>
+    <div id="guestButtons">
+        <a href="signup.html" class="btn-home">Sign Up</a>
+        <a href="login.html" class="btn-home">Log in</a>
+    </div>
+    <div id="userButtons">
+        <a href="book.html" class="btn-home">Book An Appointment</a>
+        <a href="view.html" class="btn-home">View Your Bookings</a>
+        <a onclick="logout();" href="/login.html" class="btn-home">Log out</a>
+    </div>
+
+
+    <script>
+        async function checkSession() {
+            try {
+            const response = await fetch('/check-session'); // Wait for the response
+            const data = await response.json(); // Wait for the JSON data
+        
+            if (data.loggedIn) {
+                document.getElementById('welcome').textContent = `Welcome, ${data.user}!`;
+                document.getElementById("userButtons").style.display = "block";
+                document.getElementById("guestButtons").style.display = "none";
+            } else {
+                document.getElementById('welcome').textContent = `Welcome, guest!`;
+                document.getElementById("userButtons").style.display = "none";
+                document.getElementById("guestButtons").style.display = "block";
+            }
+            } catch (error) {
+            console.log('Error:', error); // Handle any errors that occur
+            }
+        }
+        checkSession();
+
+        async function logout(){
+            await fetch('/logout'); // Wait for the response
+            window.location.href = "/login.html";
+        }
+    </script>
+</body>
+</html>

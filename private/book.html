@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Book an Appointment</title>
+</head>
+
+<body>
+    <div class="book-title">Choose a day</div>
+
+    <div class="book-container">
+    </div>
+
+    <script>
+        fetch("/slots")
+        .then(res => res.json())
+        .then(data => {
+            console.log(data); // This will be an array of slot objects
+        })
+        .catch(err => console.error("Error fetching slots:", err));
+
+        const bookContainer = document.querySelector(".book-container");
+        const totalDays = 28;
+        const daysText = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+        const monthsText = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        let currentYear = "2025";
+        let currentMonthIdx = 1;
+        let monthQuery;
+        if(currentMonthIdx < 10){
+            monthQuery = "0" + String(currentMonthIdx + 1);
+        } else {
+            monthQuery = String(currentMonthIdx + 1);
+        }
+    
+        for(let i = 0; i < totalDays; i++){
+            let dayQuery;
+            if((i + 1) < 10){
+                dayQuery = "0" + String(i + 1);
+            } else {
+                dayQuery = String(i + 1);
+            }
+            let newBooking = document.createElement("div");
+            newBooking.classList.add("book-box");
+            let dayIdx = i;
+            while(dayIdx > 6){
+                dayIdx = dayIdx - 7;
+            }
+            if(dayIdx == 5 || dayIdx == 6){
+                newBooking.classList.add("book-inactive");
+            }
+            let dateType;
+            if(i == 0 || i == 20 || i == 30){
+                dateType = "ST";
+            } else if (i == 1 || i == 21){
+                dateType = "ND";
+            } else if(i == 2 || i == 22){
+                dateType = "RD";
+            } else {
+                dateType = "TH";
+            }
+            newBooking.addEventListener("click", () => {
+                window.location.href = "/choose.html?month=" + currentMonthIdx + "&day=" + String(i + 1) /*+ dateType*/ + "&date=" + currentYear + "-" + monthQuery + "-" + dayQuery;
+            });
+            newBooking.innerHTML = daysText[dayIdx] + "<br> " + String(i + 1) + dateType + "<br> " + monthsText[currentMonthIdx];
+            
+            bookContainer.appendChild(newBooking);
+        }
+    </script>
+</body>
+</html>

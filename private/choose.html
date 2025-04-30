@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Choose a time</title>
+</head>
+
+<body>
+    <div class="book-title">Book an Appointment</div>
+    <div class="book-title book-date"></div>
+
+    <div class="time-wrapper">1pm</div>
+    <div class="time-wrapper">2pm</div>
+    <div class="time-wrapper">3pm</div>
+    <div class="time-wrapper">4pm</div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const month = params.get('month');
+        const day = params.get('day');
+        const date = String(params.get('date'));
+
+        fetch("/bookings", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ queryDate: date })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.array);
+            document.querySelectorAll(".time-wrapper").forEach((wrapper, idx) => {
+                if(!data.array[idx]){
+                    wrapper.classList.add("book-inactive");
+                }
+            });
+        })
+        .catch(err => {console.error("Error: " + err)});
+
+        let dayQuery;
+            if((day + 1) < 10){
+                dayQuery = "0" + String(day + 1);
+            } else {
+                dayQuery = String(day + 1);
+            }
+
+        let dateType;
+            if(day == 0 || day == 20 || day == 30){
+                dateType = "ST";
+            } else if (day == 1 || day == 21){
+                dateType = "ND";
+            } else if(day == 2 || day == 22){
+                dateType = "RD";
+            } else {
+                dateType = "TH";
+            }
+
+        const monthsText = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+        document.querySelector(".book-date").textContent = day + dateType + " / " + monthsText[Number(month)];
+
+        document.querySelectorAll(".time-wrapper").forEach((slot, idx) => {
+            slot.addEventListener("click", async () => {
+                const time = "1" + String(idx + 3) + ":00:00";
+
+                try {
+                    // Send the data to the server
+                    const response = await fetch('/book', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ date, time })
+                    });
+
+                    // Check if the response is OK
+                    if (!response.ok) {
+                        const data = await response.json();
+                        alert('Booking failed: ' + data.message);
+                        return;
+                    }
+
+                    // If the response is successful, parse the JSON
+                    const data = await response.json();
+                    if(!data.success) {
+                        alert('Booking failed: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('There was an error processing your booking. Please try again later.');
+                }
+
+                window.location.href = "/thanks.html";
+            });
+        });
+    </script>
+</body>
+</html>
