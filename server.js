@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 app.use(express.json());
 const mysql = require('mysql2');
 const port = process.env.PORT || 3000;
