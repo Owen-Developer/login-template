@@ -358,7 +358,7 @@ app.post("/bookings", (req, res) => {
 	}
 	setTimeout(() => {
 		res.json({ array: availability });
-	}, 50);
+	}, 5000);
 
 });
 
