@@ -21,10 +21,18 @@ app.use(session({
 }));
 
 const db = mysql.createConnection({
-	host: process.env.DB_HOST,
-	user: process.env.DB_USER,
-	password: process.env.DB_PASSWORD,
-	database: process.env.DB_NAME
+	host: "crossover.proxy.rlwy.net",
+	user: "root",
+	password: "JBOXtnDwlAMiIfYjqZEmrghBjrRKIULy",
+	database: "railway",
+	port: 24642
+});
+db.connect((err) => {
+	if (err) {
+		console.error('Database connection failed:', err.stack);
+		return;
+	}
+	console.log('Connected to MySQL database.');
 });
 
 app.use(express.static('public'));
@@ -36,14 +44,6 @@ function requireUser(req, res, next){
 	next();
 }
 
-db.connect((err) => {
-	if (err) {
-		console.error('Database connection failed:', err.stack);
-		return;
-	}
-	console.log('Connected to MySQL database.');
-});
-
 const transporter = nodemailer.createTransport({
 	service: 'gmail',
 	auth: {
@@ -52,7 +52,7 @@ const transporter = nodemailer.createTransport({
 	}
   });
 function sendVerificationEmail(userEmail, token) {
-	const verificationLink = `http://localhost:3000/verify.html?token=${token}`;
+	const verificationLink = `https://login-template-wyxd.onrender.com/verify.html?token=${token}`;
   
 	const mailOptions = {
 		from: 'marceauowen@gmail.com',  // Sender address
