@@ -202,6 +202,10 @@ app.get("/choose.html", requireUser, (req, res) => {
 		const month = Number(req.query.month); // 1 = 2
 		const day = Number(req.query.day); // 2 = 2
 		const formalDate = req.query.date; // 2025-02-02
+
+		console.log("mt query: " + month);
+		console.log("dy query: " + day);
+		console.log("dt query: " + formalDate);
 	
 		let formalMonth;
 		if((month + 1) < 10){
