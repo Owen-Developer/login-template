@@ -202,10 +202,6 @@ app.get("/choose.html", requireUser, (req, res) => {
 		const month = Number(req.query.month); // 1 = 2
 		const day = Number(req.query.day); // 2 = 2
 		const formalDate = req.query.date; // 2025-02-02
-
-		console.log("mt query: " + month);
-		console.log("dy query: " + day);
-		console.log("dt query: " + formalDate);
 	
 		let formalMonth;
 		if((month + 1) < 10){
@@ -346,21 +342,24 @@ app.post("/bookings", (req, res) => {
 
 	const checkQuery = "select status from slots where date = ? and time = ?";
 	for(let i = 0; i < 4; i++){
-		db.query(checkQuery, [date, times[i]], (err, result) => {
-			if(err){
-				console.error("error fetching status: " + err);
-			}
+		setTimeout(() => {
+			db.query(checkQuery, [date, times[i]], (err, result) => {
+				if(err){
+					console.error("error fetching status: " + err);
+				}
 
-			if(result[0].status == "taken"){
-				availability.push(false);
-			} else {
-				availability.push(true);
-			}
-		});
+				if(result[0].status == "taken"){
+					availability.push(false);
+				} else {
+					availability.push(true);
+				}
+			});
+		}, 100 * i);
 	}
 	setTimeout(() => {
 		res.json({ array: availability });
 	}, 50);
+
 });
 
 app.get("/appointments", (req, res) => {
