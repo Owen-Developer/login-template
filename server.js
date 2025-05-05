@@ -5,6 +5,7 @@ app.use(express.json());
 const mysql = require('mysql2');
 const port = process.env.PORT || 3000;
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 app.use(express.urlencoded({ extended: true }));
 const crypto = require('crypto'); // verification token generator
 const nodemailer = require('nodemailer');
@@ -14,11 +15,16 @@ function generateToken() {
   return crypto.randomBytes(20).toString('hex'); 
 }
 
+/*
 app.use(session({
 	secret: 'your-secret-key', // Replace with a strong secret
 	resave: false,
 	saveUninitialized: false,
 }));
+*/
+
+
+
 
 const db = mysql.createConnection({
 	host: process.env.DB_HOST,
@@ -34,6 +40,20 @@ db.connect((err) => {
 	}
 	console.log('Connected to MySQL database.');
 });
+
+const store = new MySQLStore({
+    host: 'your-db-host',
+    user: 'your-db-user',
+    password: 'your-db-pass',
+    database: 'your-db-name',
+});
+
+app.use(session({
+    store,
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false
+}));
 
 app.use(express.static('public'));
 
