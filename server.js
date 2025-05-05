@@ -3,7 +3,7 @@ const app = express();
 const bcrypt = require('bcryptjs');
 app.use(express.json());
 const mysql = require('mysql2');
-const port = process.env.PORT || 3306;
+const port = process.env.PORT || 3000;
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 app.use(express.urlencoded({ extended: true }));
@@ -28,7 +28,7 @@ const db = mysql.createConnection({
 	user: process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
-	port: 24642 // 24642 or 3306
+	port: 3306 // 24642 or 3306
 });
 db.connect((err) => {
 	if (err) {
@@ -43,7 +43,7 @@ const store = new MySQLStore({
 	user: process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
-	port: 24642
+	port: 3306
 });
 app.use(session({
     store,
@@ -460,6 +460,9 @@ app.get("/auth-user", (req, res) => {
 			console.error("Error authenticating user: " + err);
 		}
 		req.session.creating = false;
+
+		console.log(req.session.tkn);
+		console.log(result);
 
 		res.json({ message: "Your account has been verified. Now you can log in." });
 	});
