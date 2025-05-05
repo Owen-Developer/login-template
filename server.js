@@ -3,7 +3,7 @@ const app = express();
 const bcrypt = require('bcryptjs');
 app.use(express.json());
 const mysql = require('mysql2');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3306;
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 app.use(express.urlencoded({ extended: true }));
@@ -23,15 +23,12 @@ app.use(session({
 }));
 */
 
-
-
-
 const db = mysql.createConnection({
 	host: process.env.DB_HOST,
 	user: process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
-	port: 24642
+	port: 24642 // 24642 or 3306
 });
 db.connect((err) => {
 	if (err) {
@@ -134,6 +131,7 @@ app.post("/signup", (req, res) => {
 			}
 
 			const token = generateToken();
+			req.session.tkn = token;
 			const query = 'INSERT INTO users (username, email, password_hash, email_verified, verification_token) VALUES (?, ?, ?, ?, ?)';
 			db.query(query, [username, email, hashedPassword, false, token], (err, result) => {
 				if (err) {
@@ -141,21 +139,7 @@ app.post("/signup", (req, res) => {
 					return res.status(500).send(`Error in database query: ${err.message}`);
 				}
 
-				// User is authenticated and session is created
-				req.session.user = username;
-				const idQuery = "select id from users where username = ?";
-				db.query(idQuery, [username], (err, result) => {
-					if(err){
-						console.error("error fetching user ID: ", err);
-						return res.status(500).send('Database error: ' + err.message);
-					}
-		
-					if(result.length === 0){
-						return res.status(404).send('User not found');
-					}
-		
-					req.session.userId = result[0].id;
-				});
+				req.session.creating = true;
 
 				// Redirect to index page after a short delay
 				setTimeout(() => {
@@ -279,10 +263,32 @@ app.get("/view.html", requireUser, (req, res) => {
 app.get("/thanks.html", requireUser, (req, res) => {
 	res.sendFile(__dirname + '/private/thanks.html');
 });
-app.get("/check.html", requireUser, (req, res) => {
+app.get("/check.html", (req, res, next) => {
+	if(!req.session.creating){
+		res.redirect("/");
+	}
+	next();
+}, (req, res) => {
 	res.sendFile(__dirname + '/private/check.html');
 });
-app.get("/verify.html", requireUser, (req, res) => {
+app.get("/verify.html", (req, res) => {
+	db.query("select * from users", (err, result) => {
+		if(err){
+			console.error("error selecting users: " + err);
+		}
+
+		let isToken = false;
+		const token = req.query.token;
+		result.forEach(user => {
+			if(user.verification_token == token){
+				isToken = true;
+			}
+		});
+		if(!isToken){
+			res.redirect("/");
+		}
+	});
+
 	res.sendFile(__dirname + '/private/verify.html');
 });
 ////////////////////////////////////////
@@ -357,29 +363,24 @@ app.get("/slots", (req, res) => {
 
 app.post("/bookings", (req, res) => {
 	const date = req.body.queryDate;
-	const times = ["13:00:00", "14:00:00", "15:00:00", "16:00:00"];
 	const availability = [];
 
-	const checkQuery = "select status from slots where date = ? and time = ?";
-	for(let i = 0; i < 4; i++){
-		setTimeout(() => {
-			db.query(checkQuery, [date, times[i]], (err, result) => {
-				if(err){
-					console.error("error fetching status: " + err);
-				}
+	const checkQuery = "select status from slots where date = ?";
+	db.query(checkQuery, [date], (err, result) => {
+		if(err){
+			console.error("error fetching status: " + err);
+		}
 
-				if(result[0].status == "taken"){
-					availability.push(false);
-				} else {
-					availability.push(true);
-				}
-			});
-		}, 100 * i);
-	}
-	setTimeout(() => {
+		result.forEach(slot => {
+			if(slot.status == "taken"){
+				availability.push(false);
+			} else {
+				availability.push(true);
+			}
+		});
+
 		res.json({ array: availability });
-	}, 5000);
-
+	});
 });
 
 app.get("/appointments", (req, res) => {
@@ -453,11 +454,12 @@ app.post("/cancel", (req, res) => {
 });
 
 app.get("/auth-user", (req, res) => {
-	const authQuery = "update users set email_verified = ?, verification_token = ?";
-	db.query(authQuery, [1, null], (err, result) => {
+	const authQuery = "update users set email_verified = ?, verification_token = ? where verification_token = ?";
+	db.query(authQuery, [1, null, req.session.tkn], (err, result) => {
 		if(err){
 			console.error("Error authenticating user: " + err);
 		}
+		req.session.creating = false;
 
 		res.json({ message: "Your account has been verified. Now you can log in." });
 	});
