@@ -42,12 +42,12 @@ db.connect((err) => {
 });
 
 const store = new MySQLStore({
-    host: 'your-db-host',
-    user: 'your-db-user',
-    password: 'your-db-pass',
-    database: 'your-db-name',
+	host: process.env.DB_HOST,
+	user: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
+	port: 24642
 });
-
 app.use(session({
     store,
     secret: 'your-secret-key',
