@@ -285,7 +285,7 @@ app.get("/verify.html", (req, res) => {
 			}
 		});
 		if(!isToken){
-			res.redirect("/");
+			return res.redirect("/");
 		}
 	});
 
@@ -460,9 +460,6 @@ app.get("/auth-user", (req, res) => {
 			console.error("Error authenticating user: " + err);
 		}
 		req.session.creating = false;
-
-		console.log(req.session.tkn);
-		console.log(result);
 
 		res.json({ message: "Your account has been verified. Now you can log in." });
 	});
